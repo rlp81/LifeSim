@@ -1,9 +1,14 @@
 public class GameLoop implements Runnable {
     private GameWindow game;
-    private boolean isRunning;
-
+    static private boolean isRunning;
+    Stats stats;
     public GameLoop(GameWindow game) {
+        Stats stats = new Stats();
         this.game = game;
+    }
+
+    public void finishGame() {
+        GameLoop.isRunning = false;
     }
 
     @Override
@@ -19,6 +24,7 @@ public class GameLoop implements Runnable {
             startTime = System.currentTimeMillis();
             game.updateLogic();
             game.repaint();
+
             java.awt.Toolkit.getDefaultToolkit().sync();
 
             elapsedTime = System.currentTimeMillis() - startTime;
