@@ -8,8 +8,8 @@ public class StateMachine_Predator extends StateMachine {
     public State determineNextState(Organism entity, List<Organism> worldEntities) {
         Predator predator = (Predator) entity;
 
-        if (entity.hunger < 60 && predator.digesting == 0) {
-            if (entity.hunger < 30) {
+        if (entity.hunger < 80 && predator.digesting == 0) {
+            if (entity.hunger < 40) {
                 entity.foodPreferance = FoodPreferance.ALL;
             }
             Organism closestPrey = findClosestPrey(predator, worldEntities);

@@ -41,7 +41,7 @@ public class Organism extends Pixie {
         this.maxMove = 100;
         foodPreferance = FoodPreferance.FLORA;
         birthFrame = GameConstants.CurrentFrame;
-        deathFrame = birthFrame+10000; //21600
+        deathFrame = birthFrame+10000+random.nextInt(5000); //21600
 
         this.movementQueue = new LinkedList<>();
         this.currentTarget = null;
@@ -67,8 +67,8 @@ public class Organism extends Pixie {
     }
 
     public void updateLogic(List<Organism> worldEntities, List<Organism> spawnQueue) {
-        tryToDie();
         tryForChild(spawnQueue);
+        tryToDie();
         currentState = brain.determineNextState(this, worldEntities);
         executeState(currentState);
         processMovement();
@@ -136,7 +136,7 @@ public class Organism extends Pixie {
     }
 
     public void eat() {
-        if (random.nextInt(10) == 0) {
+        if (random.nextInt(5) == 0) {
             hunger+=10;
             if (hunger > 100) {
                 hunger = 100;

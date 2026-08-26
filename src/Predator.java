@@ -4,6 +4,7 @@ import java.util.List;
 public class Predator extends Organism {
     StateMachine_Predator brain;
     protected int digesting;
+    protected int childCooldown;
     protected int preySearchRadius;
 
     public Predator(int startX, int startY, int sizeX, int sizeY) {
@@ -13,7 +14,8 @@ public class Predator extends Organism {
         changeColor(Color.RED);
         digesting = 0;
         preySearchRadius = 150;
-        hunger = 50;
+        hunger = 60;
+        childCooldown = 60;
         speed = 1.5;
     }
 
@@ -56,7 +58,7 @@ public class Predator extends Organism {
                         prey.die();
                         hunger+=10;
                         speed = 1.5;
-                        if (hunger >= 60) {
+                        if (hunger >= 80) {
                             digesting = 600;
                         }
                     }
@@ -89,13 +91,14 @@ public class Predator extends Organism {
     }
 
     public void tryForChild(List<Organism> spawnQueue) {
-        if (hunger >= 60) {
+        if (hunger >= 80 && childCooldown == 0) {
             if (random.nextInt(320) == 0) {
                 Predator child = new Predator(x, y, width, height);
                 child.parent = OrgID;
                 this.child = child.OrgID;
                 spawnQueue.add(child);
-                hunger-=30;
+                hunger-=40;
+                childCooldown = 400;
             }
         }
     }
@@ -110,6 +113,9 @@ public class Predator extends Organism {
         processMovement();
         if (digesting > 0) {
             digesting--;
+        }
+        if (childCooldown > 0) {
+            childCooldown--;
         }
     }
 
