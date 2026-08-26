@@ -3,6 +3,8 @@ import java.util.List;
 
 public class Predator extends Organism {
     StateMachine_Predator brain;
+    static int currentPredators = 0;
+    final int MAX_PREDATORS = 5000000;
     protected int digesting;
     protected int childCooldown;
     protected int preySearchRadius;
@@ -17,6 +19,7 @@ public class Predator extends Organism {
         hunger = 60;
         childCooldown = 60;
         speed = 1.5;
+        currentPredators++;
     }
 
     public void hunt() {
@@ -91,7 +94,7 @@ public class Predator extends Organism {
     }
 
     public void tryForChild(List<Organism> spawnQueue) {
-        if (hunger >= 80 && childCooldown == 0) {
+        if (hunger >= 80 && childCooldown == 0 && currentPredators < MAX_PREDATORS) {
             if (random.nextInt(320) == 0) {
                 Predator child = new Predator(x, y, width, height);
                 child.parent = OrgID;

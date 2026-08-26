@@ -1,6 +1,5 @@
-import javax.swing.*;
 import java.awt.*;
-import java.util.List;
+
 public abstract class Pixie extends Sprite {
     public Pixie(int startX, int startY) {
         super(startX, startY, 10, 10, Color.GREEN);

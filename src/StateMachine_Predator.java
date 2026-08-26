@@ -64,5 +64,4 @@ public class StateMachine_Predator extends StateMachine {
         }
         return closestPrey;
     }
-
 }

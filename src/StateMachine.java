@@ -1,5 +1,8 @@
 import java.util.List;
 public class StateMachine {
+    private int visionRadius = 50;
+    private Predator foundClosestPred;
+
     public State determineNextState(Organism entity, List<Organism> worldEntities) {
         if (entity.hunger < 80) {
             return State.HUNGRY;
@@ -7,7 +10,42 @@ public class StateMachine {
             return State.FLEEING;
         }
 
+        if (entity.hunger >= 40) {
+            if ((GameConstants.CurrentFrame + entity.OrgID) % 15 == 0) {
+                Predator closestPred = findClosestPred(entity, worldEntities);
+                if (closestPred != null) {
+                    foundClosestPred = closestPred;
+                    return State.FLEEING;
+                }
+            }
+        }
+
 
         return State.WANDERING;
     }
+
+    public Predator getClosestPred() {
+        return foundClosestPred;
+    }
+
+    private Predator findClosestPred(Organism self, List<Organism> worldEntities) {
+        Predator closestPred = null;
+        double closestDist = visionRadius;
+
+        for (Organism other : worldEntities) {
+            if (other != self) {
+                if (other instanceof Predator ) {
+                    double deltaX = other.x - self.x;
+                    double deltaY = other.y - self.y;
+                    double distance = Math.sqrt((deltaX * deltaX) + (deltaY + deltaY));
+                    if (distance < closestDist) {
+                        closestDist = distance;
+                        closestPred = (Predator) other;
+                    }
+                }
+            }
+        }
+        return closestPred;
+    }
+
 }

@@ -1,10 +1,9 @@
-import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameWindow extends JPanel {
     Random random = new Random();
@@ -37,6 +36,14 @@ public class GameWindow extends JPanel {
         if (stats.updateLogic(worldEntities)) {
             finished = true;
         }
+        if (GameConstants.headless) {
+            if (GameConstants.CurrentFrame % GameConstants.fps == 0) {
+                this.repaint();
+            }
+
+        } else {
+            repaint();
+        }
     }
 
     @Override
@@ -46,7 +53,7 @@ public class GameWindow extends JPanel {
         super.paintComponent(g);
         Font uiFont = new Font("Arial", Font.BOLD, 24);
         g2d.setFont(uiFont);
-        if (!finished) {
+        if (!finished && !GameConstants.headless) {
             for (Organism entity : worldEntities) {
                 entity.draw(g);
             }
@@ -54,10 +61,14 @@ public class GameWindow extends JPanel {
             g2d.drawString("Total Organisms: " + worldEntities.size(), 20, 30);
             g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 60);
         } else {
-            engine.finishGame();
+            if (finished) {
+                engine.finishGame();
+            }
             stats.draw(g2d);
             g2d.setColor(Color.BLACK);
             g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 30);
+            g2d.drawString("Peak Predators: " + Stats.peakPred, 20, 60);
+            g2d.drawString("Peak Prey: " + Stats.peakPrey, 20, 90);
         }
 
     }

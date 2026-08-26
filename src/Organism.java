@@ -1,8 +1,8 @@
 import java.awt.*;
-import java.util.Random;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.List;
+import java.util.Queue;
+import java.util.Random;
 
 public class Organism extends Pixie {
     int OrgID;
@@ -95,6 +95,11 @@ public class Organism extends Pixie {
             this.isMoving = true;
         }
 
+        if (currentTarget.x < 0 || currentTarget.y < 0 || currentTarget.x > GameConstants.AppWidth || currentTarget.y > GameConstants.AppHeight) {
+            currentTarget = null;
+            return;
+        }
+
         double deltaX = currentTarget.x - exactX;
         double deltaY = currentTarget.y - exactY;
         double distance = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
@@ -109,7 +114,6 @@ public class Organism extends Pixie {
             double directionX = deltaX / distance;
             double directionY = deltaY / distance;
 
-//            IO.println("Current Pos: " + exactX + ", " + exactY + "\nDegX: " + directionX + " DegY: " + directionY + " Target Pos: " + currentTarget.x + ", " +currentTarget.y);
             exactY += directionY*speed;
             exactX += directionX*speed;
         }
@@ -160,7 +164,37 @@ public class Organism extends Pixie {
     }
 
     public void flee() {
-        move(1, 0);
+        Predator predator = brain.getClosestPred();
+        if (predator == null) return;
+
+        // ONLY calculate a new escape route if we don't already have one.
+        // This stops the memory leak of creating thousands of Points per second.
+        if (currentTarget == null) {
+
+            // 1. Calculate the vector pointing FROM the predator TO the prey
+            // This naturally points away, so we don't need negative speeds
+            double deltaX = this.exactX - predator.exactX;
+            double deltaY = this.exactY - predator.exactY;
+            double distance = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
+
+            if (distance > 0) {
+                double directionX = deltaX / distance;
+                double directionY = deltaY / distance;
+
+                // 2. Project a target 50 pixels away in that safe direction
+                // Make sure we use exactX for X, and exactY for Y!
+                int runX = (int) Math.round(this.exactX + (directionX * 50));
+                int runY = (int) Math.round(this.exactY + (directionY * 50));
+
+                // 3. Clamp to the window bounds so they don't run off-screen
+                runX = Math.max(10, Math.min(GameConstants.AppWidth - 10, runX));
+                runY = Math.max(10, Math.min(GameConstants.AppHeight - 10, runY));
+
+                // 4. Set the target directly, bypassing the queue
+                movementQueue.clear();
+                currentTarget = new Point(runX, runY);
+            }
+        }
     }
 
     protected void executeState(State state) {

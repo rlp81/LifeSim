@@ -23,20 +23,19 @@ public class GameLoop implements Runnable {
             GameConstants.CurrentFrame++;
             startTime = System.currentTimeMillis();
             game.updateLogic();
-            game.repaint();
 
             java.awt.Toolkit.getDefaultToolkit().sync();
 
             elapsedTime = System.currentTimeMillis() - startTime;
             waitTime = targetTime - elapsedTime;
 
-            if (waitTime > 0) {
-                try {
-                    Thread.sleep(waitTime);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+//            if (waitTime > 0) {
+//                try {
+//                    Thread.sleep(waitTime);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 
         }
     }

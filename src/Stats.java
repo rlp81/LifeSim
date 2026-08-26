@@ -4,6 +4,8 @@ import java.util.List;
 public class Stats {
     private List<Integer> preyHistory;
     private List<Integer> predHistory;
+    public static int peakPrey = 0;
+    public static int peakPred = 0;
 
     private int graphX = 50;
     private int graphY = 50;
@@ -31,7 +33,12 @@ public class Stats {
             if (predatorCount == 0 || preyCount == 0) { //predatorCount == 0 || preyCount == 0
                 return true;
             }
-
+            if (predatorCount > peakPred) {
+                peakPred = predatorCount;
+            }
+            if (preyCount > peakPrey) {
+                peakPrey = preyCount;
+            }
             predHistory.add(predatorCount);
             preyHistory.add(preyCount);
         }
@@ -42,16 +49,13 @@ public class Stats {
         g2d.setColor(new Color(0, 0, 0, 150));
         g2d.fillRect(graphX, graphY, graphWidth, graphHeight);
 
-        // 2. Find the highest population peak to dynamically scale the Y-axis
-        int maxPop = 1; // Default to 1 to prevent division by zero
+        int maxPop = 1;
         for (int p : preyHistory) maxPop = Math.max(maxPop, p);
         for (int p : predHistory) maxPop = Math.max(maxPop, p);
 
-        // 3. Calculate how far apart each point should be on the X-axis
         int xSpacing = graphWidth / Math.max(1, preyHistory.size() - 1);
 
-        // 4. Draw the population lines
-        g2d.setStroke(new BasicStroke(2)); // Make the lines slightly thicker
+        g2d.setStroke(new BasicStroke(2));
 
         g2d.setColor(Color.GREEN);
         drawLineGraph(g2d, preyHistory, maxPop, xSpacing);
@@ -61,11 +65,11 @@ public class Stats {
     }
 
     private void drawLineGraph(Graphics2D g2d, List<Integer> history, int maxPop, int xSpacing) {
-        if (history.size() < 2) return; // Need at least two points to draw a line
+        if (history.size() < 2) return;
 
         for (int i = 0; i < history.size() - 1; i++) {
             int x1 = graphX + (i * xSpacing);
-            // Invert the Y coordinate because Y=0 is the top of the screen
+
             int y1 = graphY + graphHeight - (int)(((double)history.get(i) / maxPop) * graphHeight);
 
             int x2 = graphX + ((i + 1) * xSpacing);
