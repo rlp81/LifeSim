@@ -12,6 +12,16 @@ public class Stats {
     private int graphWidth = GameConstants.AppWidth-100;
     private int graphHeight = GameConstants.AppHeight-100;
     private int saveEvery = 240;
+    private int predatorCount = 0;
+    private int preyCount = 0;
+
+    public int getPredatorCount() {
+        return predatorCount;
+    }
+
+    public int getPreyCount() {
+        return preyCount;
+    }
 
     public Stats () {
         preyHistory = new ArrayList<>();
@@ -20,8 +30,8 @@ public class Stats {
 
     public boolean updateLogic(List<Organism> worldEntities) {
         if (GameConstants.CurrentFrame % saveEvery == 0) {
-            int predatorCount = 0;
-            int preyCount = 0;
+            predatorCount = 0;
+            preyCount = 0;
             for (Organism org : worldEntities) {
                 if (org instanceof Predator) {
                     predatorCount++;
@@ -53,7 +63,7 @@ public class Stats {
         for (int p : preyHistory) maxPop = Math.max(maxPop, p);
         for (int p : predHistory) maxPop = Math.max(maxPop, p);
 
-        int xSpacing = graphWidth / Math.max(1, preyHistory.size() - 1);
+        double xSpacing = (double) graphWidth / Math.max(1, preyHistory.size() - 1);
 
         g2d.setStroke(new BasicStroke(2));
 
@@ -64,16 +74,16 @@ public class Stats {
         drawLineGraph(g2d, predHistory, maxPop, xSpacing);
     }
 
-    private void drawLineGraph(Graphics2D g2d, List<Integer> history, int maxPop, int xSpacing) {
+    private void drawLineGraph(Graphics2D g2d, List<Integer> history, int maxPop, double xSpacing) {
         if (history.size() < 2) return;
 
         for (int i = 0; i < history.size() - 1; i++) {
-            int x1 = graphX + (i * xSpacing);
+            int x1 =  (int) Math.round(graphX + (i * xSpacing));
 
-            int y1 = graphY + graphHeight - (int)(((double)history.get(i) / maxPop) * graphHeight);
+            int y1 = graphY + graphHeight-2 - (int)(((double)history.get(i) / maxPop) * graphHeight);
 
-            int x2 = graphX + ((i + 1) * xSpacing);
-            int y2 = graphY + graphHeight - (int)(((double)history.get(i + 1) / maxPop) * graphHeight);
+            int x2 = (int) Math.round(graphX + ((i + 1) * xSpacing));
+            int y2 = graphY + graphHeight-2 - (int)(((double)history.get(i + 1) / maxPop) * graphHeight);
 
             g2d.drawLine(x1, y1, x2, y2);
         }

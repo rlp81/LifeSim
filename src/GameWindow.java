@@ -1,8 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameWindow extends JPanel {
@@ -15,10 +14,10 @@ public class GameWindow extends JPanel {
     public GameWindow() {
         this.spawnQueue = new LinkedList<>();
         this.worldEntities = new CopyOnWriteArrayList<>();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 2; i++) {
             worldEntities.add(new Predator(random.nextInt(GameConstants.AppWidth), random.nextInt(GameConstants.AppHeight), 20, 20));
         }
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 100; i++) {
             worldEntities.add(new Organism(random.nextInt(GameConstants.AppWidth), random.nextInt(GameConstants.AppHeight), 15, 15));
         }
         stats = new Stats();
@@ -35,6 +34,7 @@ public class GameWindow extends JPanel {
         spawnQueue.clear();
         if (stats.updateLogic(worldEntities)) {
             finished = true;
+            repaint();
         }
         if (GameConstants.headless) {
             if (GameConstants.CurrentFrame % GameConstants.fps == 0) {
@@ -61,19 +61,35 @@ public class GameWindow extends JPanel {
             g2d.drawString("Total Organisms: " + worldEntities.size(), 20, 30);
             g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 60);
         } else {
+            g2d.setColor(Color.BLACK);
             if (finished) {
                 engine.finishGame();
+                stats.draw(g2d);
+                g2d.setColor(Color.BLACK);
+                g2d.drawString("Peak Predators: " + Stats.peakPred, 20, 60);
+                g2d.drawString("Peak Prey: " + Stats.peakPrey, 20, 90);
+                g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 30);
+                g2d.drawString("Prey Eaten: " + Organism.preyEaten, 20, 120);
+                g2d.drawString("Prey died by old age: " + Organism.preyDiedByOld, 20, 150);
+            } else {
+                stats.draw(g2d);
+                g2d.setColor(Color.BLACK);
+                g2d.drawString("Predators: " + stats.getPredatorCount(), 20, 60);
+                g2d.drawString("Prey: " + stats.getPreyCount(), 20, 90);
+                g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 30);
             }
-            stats.draw(g2d);
-            g2d.setColor(Color.BLACK);
-            g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 30);
-            g2d.drawString("Peak Predators: " + Stats.peakPred, 20, 60);
-            g2d.drawString("Peak Prey: " + Stats.peakPrey, 20, 90);
+
         }
 
     }
 
     public static void main(String[] args) {
+        if (args.length > 0) {
+            if (Objects.equals(args[0], "--headless")) {
+                GameConstants.headless = true;
+            }
+
+        }
         JFrame window = new JFrame("Life Simulation");
 
         GameWindow gameCanvas = new GameWindow();

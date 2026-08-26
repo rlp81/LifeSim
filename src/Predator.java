@@ -5,14 +5,13 @@ public class Predator extends Organism {
     StateMachine_Predator brain;
     static int currentPredators = 0;
     final int MAX_PREDATORS = 5000000;
-    protected int digesting;
-    protected int childCooldown;
     protected int preySearchRadius;
 
     public Predator(int startX, int startY, int sizeX, int sizeY) {
         super(startX, startY, sizeX, sizeY);
         foodPreferance = FoodPreferance.PREY;
         this.brain = new StateMachine_Predator();
+        deathFrame = birthFrame+4100+random.nextInt(4000);
         changeColor(Color.RED);
         digesting = 0;
         preySearchRadius = 150;
@@ -59,10 +58,13 @@ public class Predator extends Organism {
                     distance = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
                     if (distance <= speed*1.5) {
                         prey.die();
+                        preyEaten++;
                         hunger+=10;
                         speed = 1.5;
                         if (hunger >= 80) {
                             digesting = 600;
+                        } else {
+                            digesting = 100;
                         }
                     }
                 }
@@ -76,8 +78,8 @@ public class Predator extends Organism {
                         currentTarget = null;
                         movementQueue.clear();
                     } else {
-                        if (Math.abs(currentTarget.x-prey.x) < speed*4 || Math.abs(currentTarget.y-prey.y) < speed*4) {
-                            speed = 1.65;
+                        if (Math.abs(currentTarget.x-prey.x) < speed*20 || Math.abs(currentTarget.y-prey.y) < speed*20) {
+                            speed = 1.75;
                         }
                     }
                 }
@@ -95,13 +97,13 @@ public class Predator extends Organism {
 
     public void tryForChild(List<Organism> spawnQueue) {
         if (hunger >= 80 && childCooldown == 0 && currentPredators < MAX_PREDATORS) {
-            if (random.nextInt(320) == 0) {
+            if (random.nextInt(800) == 0) {
                 Predator child = new Predator(x, y, width, height);
                 child.parent = OrgID;
                 this.child = child.OrgID;
                 spawnQueue.add(child);
                 hunger-=40;
-                childCooldown = 400;
+                childCooldown = 6000;
             }
         }
     }
@@ -119,18 +121,6 @@ public class Predator extends Organism {
         }
         if (childCooldown > 0) {
             childCooldown--;
-        }
-    }
-
-    private void decreaseHunger() {
-        if (hunger > 0 && digesting == 0) {
-            int randomNumber = random.nextInt(150);
-            if (randomNumber == 0) {
-                hunger-=5;
-                if (hunger > 0) {
-                    hunger = 0;
-                }
-            }
         }
     }
 

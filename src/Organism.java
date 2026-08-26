@@ -7,6 +7,9 @@ import java.util.Random;
 public class Organism extends Pixie {
     int OrgID;
     static int nextOrgID = 0;
+    static int preyEaten = 0;
+    static int preyDiedByOld = 0;
+    static int preyDiedBySomething = 0;
     protected Queue<Point> movementQueue;
     protected Point currentTarget;
     protected Random random = new Random();
@@ -22,9 +25,11 @@ public class Organism extends Pixie {
     protected State currentState;
     protected long deathFrame;
     protected long birthFrame;
+    protected int childCooldown = 800;
     boolean dead = false;
     protected int parent = -1;
     protected int child;
+    protected int digesting = 0;
 
     public Organism (int startX, int startY, int sizeX, int sizeY, StateMachine brain) {
         super(startX, startY, sizeX, sizeY);
@@ -41,7 +46,7 @@ public class Organism extends Pixie {
         this.maxMove = 100;
         foodPreferance = FoodPreferance.FLORA;
         birthFrame = GameConstants.CurrentFrame;
-        deathFrame = birthFrame+10000+random.nextInt(5000); //21600
+        deathFrame = birthFrame+5000+random.nextInt(7000); //21600
 
         this.movementQueue = new LinkedList<>();
         this.currentTarget = null;
@@ -60,7 +65,7 @@ public class Organism extends Pixie {
         this.maxMove = 100;
         foodPreferance = FoodPreferance.FLORA;
         birthFrame = GameConstants.CurrentFrame;
-        deathFrame = birthFrame+10000;
+        deathFrame = birthFrame+5000+random.nextInt(6000);
 
         this.movementQueue = new LinkedList<>();
         this.currentTarget = null;
@@ -69,9 +74,20 @@ public class Organism extends Pixie {
     public void updateLogic(List<Organism> worldEntities, List<Organism> spawnQueue) {
         tryForChild(spawnQueue);
         tryToDie();
+//        decreaseHunger();
         currentState = brain.determineNextState(this, worldEntities);
         executeState(currentState);
         processMovement();
+        if (childCooldown > 0) {
+            childCooldown--;
+        }
+        if (currentState == State.FLEEING) {
+            if (random.nextInt(2) == 0) {
+                if (hunger > 0) {
+                    hunger-=5;
+                }
+            }
+        }
     }
 
     public void die () {
@@ -123,13 +139,33 @@ public class Organism extends Pixie {
 
     public void tryToDie() {
         if (GameConstants.CurrentFrame >= deathFrame) {
+            preyDiedByOld++;
             die();
+        } else {
+            if (GameConstants.CurrentFrame % 240 == 0 && random.nextInt(1000) < 8) {
+                die();
+                preyDiedBySomething++;
+            }
+        }
+    }
+
+    protected void decreaseHunger() {
+        if (hunger > 0 && digesting == 0) {
+            int randomNumber = random.nextInt(150);
+            if (randomNumber == 0) {
+                hunger-=1;
+                if (hunger < 0) {
+                    hunger = 0;
+                    die();
+                }
+            }
         }
     }
 
     public void tryForChild(List<Organism> spawnQueue) {
         if (hunger > 80) {
-            if (random.nextInt(20) == 0) {
+            if (random.nextInt(500) == 0 && childCooldown == 0) {
+                childCooldown = 6000;
                 Organism child = new Organism(x, y, 15, 15);
                 child.parent = OrgID;
                 this.child = child.OrgID;
@@ -140,8 +176,8 @@ public class Organism extends Pixie {
     }
 
     public void eat() {
-        if (random.nextInt(5) == 0) {
-            hunger+=10;
+        if (random.nextInt(7) == 0 && digesting == 0) {
+            hunger+=5;
             if (hunger > 100) {
                 hunger = 100;
             }

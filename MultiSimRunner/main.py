@@ -17,7 +17,7 @@ def run_command(command):
         return {"command": command, "status": "Failed", "stderr": e.stderr.strip()}
 
 # Define the list of system commands you want to run in parallel
-command = "/usr/bin/java -jar LifeSim.jar"
+command = "/usr/bin/java -jar LifeSim.jar --headless"
 
 # Set the maximum number of worker threads to run simultaneously
 MAX_WORKERS = 20
