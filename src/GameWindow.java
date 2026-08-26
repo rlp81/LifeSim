@@ -44,25 +44,26 @@ public class GameWindow extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         super.paintComponent(g);
+        Font uiFont = new Font("Arial", Font.BOLD, 24);
+        g2d.setFont(uiFont);
         if (!finished) {
             for (Organism entity : worldEntities) {
                 entity.draw(g);
             }
-            Font uiFont = new Font("Arial", Font.BOLD, 24);
-            g2d.setFont(uiFont);
-
             g2d.setColor(Color.BLACK);
             g2d.drawString("Total Organisms: " + worldEntities.size(), 20, 30);
             g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 60);
         } else {
             engine.finishGame();
             stats.draw(g2d);
+            g2d.setColor(Color.BLACK);
+            g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 30);
         }
 
     }
 
     public static void main(String[] args) {
-        JFrame window = new JFrame("My Pixie Game");
+        JFrame window = new JFrame("Life Simulation");
 
         GameWindow gameCanvas = new GameWindow();
         window.add(gameCanvas);
