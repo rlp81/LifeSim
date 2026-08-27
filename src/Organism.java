@@ -14,7 +14,7 @@ public class Organism extends Pixie {
     protected Point currentTarget;
     protected Random random = new Random();
     protected int health;
-    protected int hunger;
+    protected double hunger;
     protected double exactX;
     protected double exactY;
     protected int maxMove;
@@ -25,7 +25,7 @@ public class Organism extends Pixie {
     protected State currentState;
     protected long deathFrame;
     protected long birthFrame;
-    protected int childCooldown = 800;
+    protected int childCooldown = 850;
     boolean dead = false;
     protected int parent = -1;
     protected int child;
@@ -33,8 +33,7 @@ public class Organism extends Pixie {
 
     public Organism (int startX, int startY, int sizeX, int sizeY, StateMachine brain) {
         super(startX, startY, sizeX, sizeY);
-        OrgID = nextOrgID;
-        nextOrgID++;
+        this.OrgID = nextOrgID++;
         this.brain = brain;
         this.currentState = State.WANDERING;
 
@@ -46,7 +45,7 @@ public class Organism extends Pixie {
         this.maxMove = 100;
         foodPreferance = FoodPreferance.FLORA;
         birthFrame = GameConstants.CurrentFrame;
-        deathFrame = birthFrame+5000+random.nextInt(7000); //21600
+        deathFrame = birthFrame+4500+random.nextInt(6000); //21600
 
         this.movementQueue = new LinkedList<>();
         this.currentTarget = null;
@@ -57,6 +56,7 @@ public class Organism extends Pixie {
         this.brain = new StateMachine();
         this.currentState = State.WANDERING;
 
+        this.OrgID = nextOrgID++;
         this.exactX = startX;
         this.exactY = startY;
         this.health = 100;
@@ -65,7 +65,7 @@ public class Organism extends Pixie {
         this.maxMove = 100;
         foodPreferance = FoodPreferance.FLORA;
         birthFrame = GameConstants.CurrentFrame;
-        deathFrame = birthFrame+5000+random.nextInt(6000);
+        deathFrame = birthFrame+5000+random.nextInt(4000);
 
         this.movementQueue = new LinkedList<>();
         this.currentTarget = null;
@@ -82,7 +82,7 @@ public class Organism extends Pixie {
             childCooldown--;
         }
         if (currentState == State.FLEEING) {
-            if (random.nextInt(2) == 0) {
+            if (random.nextInt(4) == 0) {
                 if (hunger > 0) {
                     hunger-=5;
                 }
@@ -139,7 +139,11 @@ public class Organism extends Pixie {
 
     public void tryToDie() {
         if (GameConstants.CurrentFrame >= deathFrame) {
-            preyDiedByOld++;
+            if (this instanceof Predator) {
+                Predator.predatorsDiedOfOld++;
+            } else {
+                preyDiedByOld++;
+            }
             die();
         } else {
             if (GameConstants.CurrentFrame % 240 == 0 && random.nextInt(1000) < 8) {
@@ -153,31 +157,42 @@ public class Organism extends Pixie {
         if (hunger > 0 && digesting == 0) {
             int randomNumber = random.nextInt(150);
             if (randomNumber == 0) {
-                hunger-=1;
+                hunger-=1.5;
                 if (hunger < 0) {
                     hunger = 0;
                     die();
+                    Predator.predatorsStarved++;
                 }
             }
+        } else if (hunger <= 0) {
+            die();
         }
+    }
+
+    private int getChildPossiblility(){
+        int count = Stats.getPreyCount();
+        if (count <= 0) {
+            return 1;
+        }
+        return count;
     }
 
     public void tryForChild(List<Organism> spawnQueue) {
         if (hunger > 80) {
-            if (random.nextInt(500) == 0 && childCooldown == 0) {
-                childCooldown = 6000;
+            if (random.nextInt(getChildPossiblility()) == 0 && childCooldown == 0) {
+                childCooldown = 6500;
                 Organism child = new Organism(x, y, 15, 15);
                 child.parent = OrgID;
                 this.child = child.OrgID;
                 spawnQueue.add(child);
-                hunger-=40;
+                hunger-=80;
             }
         }
     }
 
     public void eat() {
         if (random.nextInt(7) == 0 && digesting == 0) {
-            hunger+=5;
+            hunger+=5.08;
             if (hunger > 100) {
                 hunger = 100;
             }

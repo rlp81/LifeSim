@@ -1,9 +1,13 @@
 import java.awt.*;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Predator extends Organism {
     StateMachine_Predator brain;
+    static List<Predator> predators = new CopyOnWriteArrayList<>();;
     static int currentPredators = 0;
+    static int predatorsStarved = 0;
+    static int predatorsDiedOfOld = 0;
     final int MAX_PREDATORS = 5000000;
     protected int preySearchRadius;
 
@@ -11,7 +15,7 @@ public class Predator extends Organism {
         super(startX, startY, sizeX, sizeY);
         foodPreferance = FoodPreferance.PREY;
         this.brain = new StateMachine_Predator();
-        deathFrame = birthFrame+4100+random.nextInt(4000);
+        deathFrame = birthFrame+4900+random.nextInt(4000);
         changeColor(Color.RED);
         digesting = 0;
         preySearchRadius = 150;
@@ -19,6 +23,7 @@ public class Predator extends Organism {
         childCooldown = 60;
         speed = 1.5;
         currentPredators++;
+        predators.add(this);
     }
 
     public void hunt() {
@@ -59,8 +64,10 @@ public class Predator extends Organism {
                     if (distance <= speed*1.5) {
                         prey.die();
                         preyEaten++;
-                        hunger+=10;
-                        speed = 1.5;
+                        hunger+=12;
+                        if (speed > 1.5) {
+                            speed = 1.5;
+                        }
                         if (hunger >= 80) {
                             digesting = 600;
                         } else {
@@ -78,8 +85,8 @@ public class Predator extends Organism {
                         currentTarget = null;
                         movementQueue.clear();
                     } else {
-                        if (Math.abs(currentTarget.x-prey.x) < speed*20 || Math.abs(currentTarget.y-prey.y) < speed*20) {
-                            speed = 1.75;
+                        if (Math.abs(currentTarget.x-prey.x) < speed*14 || Math.abs(currentTarget.y-prey.y) < speed*14) {
+                            speed = 1.85;
                         }
                     }
                 }
@@ -97,13 +104,13 @@ public class Predator extends Organism {
 
     public void tryForChild(List<Organism> spawnQueue) {
         if (hunger >= 80 && childCooldown == 0 && currentPredators < MAX_PREDATORS) {
-            if (random.nextInt(800) == 0) {
+            if (random.nextInt(900) == 0) {
                 Predator child = new Predator(x, y, width, height);
                 child.parent = OrgID;
                 this.child = child.OrgID;
                 spawnQueue.add(child);
                 hunger-=40;
-                childCooldown = 6000;
+                childCooldown = 7000;
             }
         }
     }

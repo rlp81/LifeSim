@@ -11,15 +11,16 @@ public class Stats {
     private int graphY = 50;
     private int graphWidth = GameConstants.AppWidth-100;
     private int graphHeight = GameConstants.AppHeight-100;
-    private int saveEvery = 240;
-    private int predatorCount = 0;
-    private int preyCount = 0;
+    public int saveEvery = 240;
+    private static int predatorCount = 0;
+    private static int preyCount = 0;
+    private int finalYear = 0;
 
-    public int getPredatorCount() {
+    static public int getPredatorCount() {
         return predatorCount;
     }
 
-    public int getPreyCount() {
+    static public int getPreyCount() {
         return preyCount;
     }
 
@@ -41,6 +42,7 @@ public class Stats {
             }
 
             if (predatorCount == 0 || preyCount == 0) { //predatorCount == 0 || preyCount == 0
+                finalYear = (int) (GameConstants.CurrentFrame / saveEvery);
                 return true;
             }
             if (predatorCount > peakPred) {
@@ -53,6 +55,14 @@ public class Stats {
             preyHistory.add(preyCount);
         }
         return false;
+    }
+
+    public int getFinalYear() {
+        return finalYear;
+    }
+
+    public void setFinalYear(int year) {
+        finalYear = year;
     }
 
     public void draw(Graphics2D g2d) {

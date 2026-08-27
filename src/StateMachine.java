@@ -32,16 +32,14 @@ public class StateMachine {
         Predator closestPred = null;
         double closestDist = visionRadius;
 
-        for (Organism other : worldEntities) {
+        for (Predator other : Predator.predators) {
             if (other != self) {
-                if (other instanceof Predator ) {
-                    double deltaX = other.x - self.x;
-                    double deltaY = other.y - self.y;
-                    double distance = Math.sqrt((deltaX * deltaX) + (deltaY + deltaY));
-                    if (distance < closestDist) {
-                        closestDist = distance;
-                        closestPred = (Predator) other;
-                    }
+                double deltaX = other.x - self.x;
+                double deltaY = other.y - self.y;
+                double distance = Math.sqrt((deltaX * deltaX) + (deltaY + deltaY));
+                if (distance < closestDist) {
+                    closestDist = distance;
+                    closestPred = (Predator) other;
                 }
             }
         }

@@ -9,6 +9,7 @@ public class GameWindow extends JPanel {
     List<Organism> worldEntities;
     List<Organism> spawnQueue;
     static public GameLoop engine;
+    boolean forceStop = false;
     boolean finished = false;
     Stats stats;
     public GameWindow() {
@@ -32,7 +33,7 @@ public class GameWindow extends JPanel {
 
         worldEntities.addAll(spawnQueue);
         spawnQueue.clear();
-        if (stats.updateLogic(worldEntities)) {
+        if (stats.updateLogic(worldEntities) || forceStop) {
             finished = true;
             repaint();
         }
@@ -68,9 +69,11 @@ public class GameWindow extends JPanel {
                 g2d.setColor(Color.BLACK);
                 g2d.drawString("Peak Predators: " + Stats.peakPred, 20, 60);
                 g2d.drawString("Peak Prey: " + Stats.peakPrey, 20, 90);
-                g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 30);
+                g2d.drawString("Year: " + stats.getFinalYear(), 20, 30);
                 g2d.drawString("Prey Eaten: " + Organism.preyEaten, 20, 120);
                 g2d.drawString("Prey died by old age: " + Organism.preyDiedByOld, 20, 150);
+                g2d.drawString("Pred Starved: " + Predator.predatorsStarved, 20, 180);
+                g2d.drawString("Pred died by old age: " + Predator.predatorsDiedOfOld, 20, 210);
             } else {
                 stats.draw(g2d);
                 g2d.setColor(Color.BLACK);
@@ -93,7 +96,14 @@ public class GameWindow extends JPanel {
         JFrame window = new JFrame("Life Simulation");
 
         GameWindow gameCanvas = new GameWindow();
+        gameCanvas.setLayout(new FlowLayout());
         window.add(gameCanvas);
+        JButton quitButton = new JButton("Quit");
+        quitButton.addActionListener(e -> {
+            gameCanvas.forceStop = true;
+            gameCanvas.stats.setFinalYear((int)(GameConstants.CurrentFrame/gameCanvas.stats.saveEvery));
+        });
+        gameCanvas.add(quitButton);
 
         window.setSize(GameConstants.AppWidth, GameConstants.AppHeight);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
