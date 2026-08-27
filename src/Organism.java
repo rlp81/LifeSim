@@ -30,6 +30,9 @@ public class Organism extends Pixie {
     protected int childCooldown = 850;
     boolean dead = false;
     protected int parent = -1;
+    protected double hungerDecrease = 1.5;
+    protected int childHungerReq = 80;
+    protected int childHungerCost = 40;
     protected int child;
     protected int digesting = 0;
     protected int generation = 1;
@@ -168,7 +171,7 @@ public class Organism extends Pixie {
         if (hunger > 0 && digesting == 0) {
             int randomNumber = random.nextInt(150);
             if (randomNumber == 0) {
-                hunger-=1.5;
+                hunger-=hungerDecrease;
                 if (hunger < 0) {
                     hunger = 0;
                     die();

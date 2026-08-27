@@ -27,6 +27,23 @@ public class Predator extends Organism {
     }
 
     public void hunt() {
+        int currentPrey = Stats.getPreyCount();
+        int currentPred = Stats.getPredatorCount();
+        if (currentPrey < 100 && hunger > 30 && currentPred > 10) {
+
+            if (random.nextInt(5) != 0) {
+                hungerDecrease = .5;
+                childHungerReq = 60;
+                childHungerCost = 30;
+                currentState = State.WANDERING;
+                moveRandomly();
+                currentTarget = null;
+                return;
+            }
+        }
+        childHungerReq = 80;
+        childHungerCost = 40;
+        hungerDecrease = 1.5;
         Organism prey = brain.getClosestPrey();
         if (prey != null) {
             queueWaypoint(prey.x, prey.y);
@@ -69,7 +86,7 @@ public class Predator extends Organism {
                         if (speed > 1.5) {
                             speed = 1.5;
                         }
-                        if (hunger >= 80) {
+                        if (hunger >= childHungerReq) {
                             digesting = 600;
                         } else {
                             digesting = 100;
@@ -104,14 +121,14 @@ public class Predator extends Organism {
     }
 
     public void tryForChild(List<Organism> spawnQueue) {
-        if (hunger >= 80 && childCooldown == 0 && currentPredators < MAX_PREDATORS) {
+        if (hunger >= childHungerReq && childCooldown == 0 && currentPredators < MAX_PREDATORS) {
             if (random.nextInt(900) == 0) {
                 Predator child = new Predator(x, y, width, height);
                 child.generation = this.generation+1;
                 child.parent = OrgID;
                 this.child = child.OrgID;
                 spawnQueue.add(child);
-                hunger-=40;
+                hunger-=childHungerCost;
                 childCooldown = 7000;
             }
         }
