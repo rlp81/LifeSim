@@ -1,4 +1,5 @@
 import java.util.List;
+
 public class StateMachine {
     private int visionRadius = 50;
     private Predator foundClosestPred;
@@ -33,14 +34,12 @@ public class StateMachine {
         double closestDist = visionRadius;
 
         for (Predator other : Predator.predators) {
-            if (other != self) {
-                double deltaX = other.x - self.x;
-                double deltaY = other.y - self.y;
-                double distance = Math.sqrt((deltaX * deltaX) + (deltaY + deltaY));
-                if (distance < closestDist) {
-                    closestDist = distance;
-                    closestPred = (Predator) other;
-                }
+            double deltaX = other.x - self.x;
+            double deltaY = other.y - self.y;
+            double distance = Math.sqrt((deltaX * deltaX) + (deltaY + deltaY));
+            if (distance < closestDist) {
+                closestDist = distance;
+                closestPred = other;
             }
         }
         return closestPred;

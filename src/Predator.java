@@ -63,6 +63,7 @@ public class Predator extends Organism {
                     distance = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
                     if (distance <= speed*1.5) {
                         prey.die();
+                        eatenByPredYr++;
                         preyEaten++;
                         hunger+=12;
                         if (speed > 1.5) {
@@ -106,6 +107,7 @@ public class Predator extends Organism {
         if (hunger >= 80 && childCooldown == 0 && currentPredators < MAX_PREDATORS) {
             if (random.nextInt(900) == 0) {
                 Predator child = new Predator(x, y, width, height);
+                child.generation = this.generation+1;
                 child.parent = OrgID;
                 this.child = child.OrgID;
                 spawnQueue.add(child);

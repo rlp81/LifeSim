@@ -1,8 +1,6 @@
 import java.awt.*;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Queue;
-import java.util.Random;
 
 public class Organism extends Pixie {
     int OrgID;
@@ -19,6 +17,10 @@ public class Organism extends Pixie {
     protected double exactY;
     protected int maxMove;
     protected double speed = 1.55;
+    static List<Integer> diedOfOld = new ArrayList<>();
+    static List<Integer> eatenByPred = new ArrayList<>();
+    static int diedOfOldYr = 0;
+    static int eatenByPredYr = 0;
     protected FoodPreferance foodPreferance;
     protected boolean isMoving;
     protected StateMachine brain;
@@ -30,6 +32,8 @@ public class Organism extends Pixie {
     protected int parent = -1;
     protected int child;
     protected int digesting = 0;
+    protected int generation = 1;
+    static int largestGeneration = 1;
 
     public Organism (int startX, int startY, int sizeX, int sizeY, StateMachine brain) {
         super(startX, startY, sizeX, sizeY);
@@ -84,13 +88,19 @@ public class Organism extends Pixie {
         if (currentState == State.FLEEING) {
             if (random.nextInt(4) == 0) {
                 if (hunger > 0) {
+                    speed = 1.65;
                     hunger-=5;
                 }
             }
+        } else {
+            speed = 1.55;
         }
     }
 
     public void die () {
+        if (this.generation > largestGeneration) {
+            largestGeneration = this.generation;
+        }
         dead = true;
     }
 
@@ -144,6 +154,7 @@ public class Organism extends Pixie {
             } else {
                 preyDiedByOld++;
             }
+            diedOfOldYr++;
             die();
         } else {
             if (GameConstants.CurrentFrame % 240 == 0 && random.nextInt(1000) < 8) {
@@ -182,6 +193,7 @@ public class Organism extends Pixie {
             if (random.nextInt(getChildPossiblility()) == 0 && childCooldown == 0) {
                 childCooldown = 6500;
                 Organism child = new Organism(x, y, 15, 15);
+                child.generation = this.generation+1;
                 child.parent = OrgID;
                 this.child = child.OrgID;
                 spawnQueue.add(child);

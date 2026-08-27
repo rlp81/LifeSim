@@ -11,7 +11,7 @@ public class Stats {
     private int graphY = 50;
     private int graphWidth = GameConstants.AppWidth-100;
     private int graphHeight = GameConstants.AppHeight-100;
-    public int saveEvery = 240;
+    public int saveEvery = GameConstants.YEAR;
     private static int predatorCount = 0;
     private static int preyCount = 0;
     private int finalYear = 0;
@@ -72,6 +72,8 @@ public class Stats {
         int maxPop = 1;
         for (int p : preyHistory) maxPop = Math.max(maxPop, p);
         for (int p : predHistory) maxPop = Math.max(maxPop, p);
+        for (int p : Organism.eatenByPred) maxPop = Math.max(maxPop, p);
+        for (int p : Organism.diedOfOld) maxPop = Math.max(maxPop, p);
 
         double xSpacing = (double) graphWidth / Math.max(1, preyHistory.size() - 1);
 
@@ -82,6 +84,12 @@ public class Stats {
 
         g2d.setColor(Color.RED);
         drawLineGraph(g2d, predHistory, maxPop, xSpacing);
+
+        g2d.setColor(Color.BLUE);
+        drawLineGraph(g2d, Organism.diedOfOld, maxPop, xSpacing);
+
+        g2d.setColor(Color.BLACK);
+        drawLineGraph(g2d, Organism.eatenByPred, maxPop, xSpacing);
     }
 
     private void drawLineGraph(Graphics2D g2d, List<Integer> history, int maxPop, double xSpacing) {

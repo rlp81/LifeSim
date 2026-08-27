@@ -11,6 +11,7 @@ public class GameWindow extends JPanel {
     static public GameLoop engine;
     boolean forceStop = false;
     boolean finished = false;
+    int currentYear = 0;
     Stats stats;
     public GameWindow() {
         this.spawnQueue = new LinkedList<>();
@@ -33,6 +34,13 @@ public class GameWindow extends JPanel {
 
         worldEntities.addAll(spawnQueue);
         spawnQueue.clear();
+        if (GameConstants.CurrentFrame/GameConstants.YEAR > currentYear) {
+            currentYear = (int) GameConstants.CurrentFrame/GameConstants.YEAR;
+            Organism.diedOfOld.add(Organism.diedOfOldYr);
+            Organism.diedOfOldYr = 0;
+            Organism.eatenByPred.add(Organism.eatenByPredYr);
+            Organism.eatenByPredYr = 0;
+        }
         if (stats.updateLogic(worldEntities) || forceStop) {
             finished = true;
             repaint();
@@ -60,7 +68,7 @@ public class GameWindow extends JPanel {
             }
             g2d.setColor(Color.BLACK);
             g2d.drawString("Total Organisms: " + worldEntities.size(), 20, 30);
-            g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 60);
+            g2d.drawString("Year: " + GameConstants.CurrentFrame/GameConstants.YEAR, 20, 60);
         } else {
             g2d.setColor(Color.BLACK);
             if (finished) {
@@ -69,6 +77,7 @@ public class GameWindow extends JPanel {
                 g2d.setColor(Color.BLACK);
                 g2d.drawString("Peak Predators: " + Stats.peakPred, 20, 60);
                 g2d.drawString("Peak Prey: " + Stats.peakPrey, 20, 90);
+                g2d.drawString("Last Generation: " + Organism.largestGeneration, 20, 240);
                 g2d.drawString("Year: " + stats.getFinalYear(), 20, 30);
                 g2d.drawString("Prey Eaten: " + Organism.preyEaten, 20, 120);
                 g2d.drawString("Prey died by old age: " + Organism.preyDiedByOld, 20, 150);
@@ -79,7 +88,7 @@ public class GameWindow extends JPanel {
                 g2d.setColor(Color.BLACK);
                 g2d.drawString("Predators: " + stats.getPredatorCount(), 20, 60);
                 g2d.drawString("Prey: " + stats.getPreyCount(), 20, 90);
-                g2d.drawString("Year: " + GameConstants.CurrentFrame/240, 20, 30);
+                g2d.drawString("Year: " + GameConstants.CurrentFrame/GameConstants.YEAR, 20, 30);
             }
 
         }
