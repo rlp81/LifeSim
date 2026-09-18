@@ -2,15 +2,38 @@ import java.awt.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Red hunting organism that chases prey, digests kills, and reproduces when well fed.
+ * <p>
+ * Uses a {@link StateMachine_Predator} brain. On catching prey, hunger rises and
+ * {@link #digesting} blocks further hunting for a short time. Near a target the
+ * predator can sprint; reproduction is capped by {@link #MAX_PREDATORS}.
+ * </p>
+ */
 public class Predator extends Organism {
+    /** Predator-specific brain that selects hunting versus wandering. */
     StateMachine_Predator brain;
+    /** Live predators registered for O(N) prey vision scans. */
     static List<Predator> predators = new CopyOnWriteArrayList<>();;
+    /** Number of predators currently registered in {@link #predators}. */
     static int currentPredators = 0;
+    /** Lifetime count of predators that died with hunger at or below zero. */
     static int predatorsStarved = 0;
+    /** Lifetime count of predators that reached their {@link #deathFrame}. */
     static int predatorsDiedOfOld = 0;
+    /** Hard cap on simultaneous living predators. */
     final int MAX_PREDATORS = 5000000;
+    /** Intended hunt scan radius in pixels (assigned at construction; unused by the brain). */
     protected int preySearchRadius;
 
+    /**
+     * Constructs a red predator, registers it globally, and applies hunter defaults.
+     *
+     * @param startX initial x-coordinate in pixels
+     * @param startY initial y-coordinate in pixels
+     * @param sizeX  sprite width in pixels
+     * @param sizeY  sprite height in pixels
+     */
     public Predator(int startX, int startY, int sizeX, int sizeY) {
         super(startX, startY, sizeX, sizeY);
         foodPreferance = FoodPreferance.PREY;
@@ -26,6 +49,13 @@ public class Predator extends Organism {
         predators.add(this);
     }
 
+    /**
+     * Queues a waypoint toward the closest cached prey, or wanders when prey is scarce.
+     * <p>
+     * If few prey remain and several predators are alive, most ticks skip the chase
+     * and lower metabolic/reproduction costs instead.
+     * </p>
+     */
     public void hunt() {
         int currentPrey = Stats.getPreyCount();
         int currentPred = Stats.getPredatorCount();
@@ -50,6 +80,13 @@ public class Predator extends Organism {
         }
     }
 
+    /**
+     * Walks toward the current waypoint and resolves a kill if hunting and overlapping prey.
+     * <p>
+     * When closing on a moving target the queued path is cleared so a fresh chase
+     * waypoint can be issued. Near prey, {@link #speed} rises to 1.85.
+     * </p>
+     */
     private void processMovement() {
         if (currentTarget == null && !movementQueue.isEmpty()) {
             currentTarget = movementQueue.poll();
@@ -120,6 +157,11 @@ public class Predator extends Organism {
         this.y = (int) Math.round(exactY);
     }
 
+    /**
+     * Attempts to spawn another predator when hunger, cooldown, and population cap allow.
+     *
+     * @param spawnQueue list that receives the child if one is created
+     */
     public void tryForChild(List<Organism> spawnQueue) {
         if (hunger >= childHungerReq && childCooldown == 0 && currentPredators < MAX_PREDATORS) {
             if (random.nextInt(900) == 0) {
@@ -134,6 +176,12 @@ public class Predator extends Organism {
         }
     }
 
+    /**
+     * Advances one hunter tick: death, reproduction, metabolism, AI, movement, and timers.
+     *
+     * @param worldEntities living organisms used by the predator brain for hunting scans
+     * @param spawnQueue    list that receives newly created predator children this tick
+     */
     @Override
     public void updateLogic(List<Organism> worldEntities, List<Organism> spawnQueue) {
         tryToDie();
@@ -150,6 +198,11 @@ public class Predator extends Organism {
         }
     }
 
+    /**
+     * Dispatches the selected {@link State} to wander, flee, or hunt.
+     *
+     * @param state behavioral mode chosen by {@link #brain}
+     */
     protected void executeState(State state) {
         switch (state) {
             case WANDERING:

@@ -4,15 +4,37 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Swing canvas that owns the world, drives per-frame updates, and paints organisms or stats.
+ * <p>
+ * Construction seeds two {@link Predator}s and one hundred prey. Each
+ * {@link #updateLogic()} tick updates every entity, merges {@link #spawnQueue},
+ * rolls yearly death tallies, and asks {@link Stats} whether a population has
+ * gone extinct. {@link #main(String[])} is the application entry point and
+ * supports {@code --headless} to skip per-frame sprite drawing.
+ * </p>
+ */
 public class GameWindow extends JPanel {
+    /** RNG used to place the initial predators and prey. */
     Random random = new Random();
+    /** Living organisms processed and drawn each tick. */
     List<Organism> worldEntities;
+    /** Offspring created during the current tick, merged after entity updates. */
     List<Organism> spawnQueue;
+    /** Simulation thread started from {@link #main(String[])}. */
     static public GameLoop engine;
+    /** Set by the Quit button so the next update treats the run as finished. */
     boolean forceStop = false;
+    /** {@code true} after extinction or a forced stop; switches painting to the stats screen. */
     boolean finished = false;
+    /** Last simulated year for which yearly death lists were flushed. */
     int currentYear = 0;
+    /** Population historian and end-of-run graph renderer. */
     Stats stats;
+
+    /**
+     * Creates the world lists, spawns the starting populations, and allocates {@link Stats}.
+     */
     public GameWindow() {
         this.spawnQueue = new LinkedList<>();
         this.worldEntities = new CopyOnWriteArrayList<>();
@@ -25,6 +47,14 @@ public class GameWindow extends JPanel {
         stats = new Stats();
     }
 
+    /**
+     * Steps every organism, removes the dead, admits newborns, and may end the run.
+     * <p>
+     * On year boundaries, yearly death counters are appended to
+     * {@link Organism#diedOfOld} and {@link Organism#eatenByPred}. In headless
+     * mode the canvas is repainted only once per simulated second.
+     * </p>
+     */
     public void updateLogic () {
         if (finished) { return;}
         for (Organism entity: worldEntities) {
@@ -55,6 +85,11 @@ public class GameWindow extends JPanel {
         }
     }
 
+    /**
+     * Paints living sprites during a run, or the statistics overlay when finished or headless.
+     *
+     * @param g the Swing-provided graphics context
+     */
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
@@ -95,6 +130,16 @@ public class GameWindow extends JPanel {
 
     }
 
+    /**
+     * Launches the Life Simulation window and starts {@link GameLoop} on a background thread.
+     * <p>
+     * Passing {@code --headless} as the first argument sets {@link GameConstants#headless}
+     * so entity sprites are not drawn every frame. The Quit button forces the stats
+     * screen and records the current year as the run's end.
+     * </p>
+     *
+     * @param args optional {@code --headless} flag in {@code args[0]}
+     */
     public static void main(String[] args) {
         if (args.length > 0) {
             if (Objects.equals(args[0], "--headless")) {
